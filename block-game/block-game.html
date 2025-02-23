@@ -146,6 +146,9 @@
             const timeTaken = ((Date.now() - startTime) / 1000).toFixed(1);
             document.getElementById('resultText').textContent = `Game Over! Your score: ${score}. You finished the game in ${timeTaken} seconds.`;
             document.getElementById('overlay').style.display = 'flex';
+
+            // Save the time for sharing
+            document.getElementById('shareButton').setAttribute('data-time', timeTaken);
         }
 
         function resetGame() {
@@ -201,9 +204,11 @@
         });
 
         document.getElementById('shareButton').addEventListener('click', () => {
+            const timeTaken = document.getElementById('shareButton').getAttribute('data-time');
             const url = window.location.href;
-            navigator.clipboard.writeText(url).then(() => {
-                alert('Link copied to clipboard!');
+            const message = `I crashed the game in ${timeTaken} seconds! Can you beat me? ${url}`;
+            navigator.clipboard.writeText(message).then(() => {
+                alert('Share text copied to clipboard!');
             });
         });
 
