@@ -166,22 +166,27 @@
             drawGame();
         }
 
-        document.getElementById('startButton').addEventListener('click', () => {
-            resetGame();
-            playerX = 0; 
-            playerY = 0; 
-            setTargetPosition();
+        function startTimer() {
             startTime = Date.now();
             timerInterval = setInterval(() => {
                 const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
                 document.getElementById('timer').textContent = `Time: ${elapsed}s`;
             }, 100);
+        }
+
+        document.getElementById('startButton').addEventListener('click', () => {
+            resetGame();
+            playerX = 0; 
+            playerY = 0; 
+            setTargetPosition();
+            startTimer(); // Start the timer
             drawGame();
         });
 
         document.getElementById('restartButtonOverlay').addEventListener('click', () => {
             resetGame();
             document.getElementById('overlay').style.display = 'none'; // Hide the overlay
+            startTimer(); // Start the timer again
         });
 
         document.getElementById('upButton').addEventListener('click', () => movePlayer(0, -blockSize));
@@ -210,7 +215,7 @@
 
         document.getElementById('shareButton').addEventListener('click', () => {
             const timeTaken = document.getElementById('shareButton').getAttribute('data-time');
-            const url = window.location.href;
+            const url = window.location.href; // Ensure we get the correct URL
             const message = `I crashed the game in ${timeTaken} seconds! Can you beat me? ${url}`;
             navigator.clipboard.writeText(message).then(() => {
                 alert('Share text copied to clipboard!');
