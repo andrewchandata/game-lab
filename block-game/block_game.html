@@ -116,6 +116,13 @@
             playerX = Math.max(0, Math.min(canvas.width - blockSize, playerX));
             playerY = Math.max(0, Math.min(canvas.height - blockSize, playerY));
 
+            // Check for collision after moving
+            if (isColliding()) {
+                score++;
+                document.getElementById('score').textContent = score;
+                setTargetPosition();
+            }
+
             drawGame();
         }
 
@@ -184,16 +191,6 @@
                     case 'd':
                         movePlayer(blockSize, 0);
                         break;
-                }
-
-                if (isColliding()) {
-                    score++;
-                    document.getElementById('score').textContent = score;
-                    setTargetPosition();
-                    drawGame();
-                    if (score >= 10) {
-                        endGame();
-                    }
                 }
             }
         });
