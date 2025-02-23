@@ -22,26 +22,72 @@
         canvas {
             border: 2px solid #333;
         }
-        button {
-            margin-left: 10px;
+        #overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+        #overlayContent {
+            text-align: center;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        #controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 10px;
+        }
+        .directionButton {
+            width: 50px;
+            height: 50px;
+            font-size: 24px;
+            margin: 5px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
     <div id="scoreboard">
-        Score: <span id="score">0</span> 
+        Score: <span id="score">0</span>
         <button id="startButton">Start</button>
-        <button id="restartButton" style="display: none;">Restart</button>
         <span id="timer">Time: 0.0s</span>
     </div>
     <canvas id="gameCanvas" width="320" height="320"></canvas>
+    
+    <div id="overlay" style="display: none;">
+        <div id="overlayContent">
+            <p id="resultText"></p>
+            <button id="shareButton">Share Link</button>
+            <button id="restartButtonOverlay">Restart Game</button>
+        </div>
+    </div>
+
+    <div id="controls">
+        <button class="directionButton" id="upButton">↑</button>
+        <div>
+            <button class="directionButton" id="leftButton">←</button>
+            <button class="directionButton" id="rightButton">→</button>
+        </div>
+        <button class="directionButton" id="downButton">↓</button>
+    </div>
+
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
         const blockSize = 40;
-        let playerX = -blockSize; // Start off-screen
-        let playerY = -blockSize; // Start off-screen
+        let playerX = -blockSize; 
+        let playerY = -blockSize; 
         let targetX = 0;
         let targetY = 0;
         let score = 0;
@@ -67,11 +113,10 @@
             playerX += dx;
             playerY += dy;
 
-            // Boundary check
             playerX = Math.max(0, Math.min(canvas.width - blockSize, playerX));
             playerY = Math.max(0, Math.min(canvas.height - blockSize, playerY));
 
-            drawGame(); // Redraw the game
+            drawGame();
         }
 
         function isColliding() {
@@ -79,23 +124,23 @@
         }
 
         function drawGame() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
             drawPlayer();
-            drawTarget(); // Only draw target if the game has started
+            drawTarget();
         }
 
         function endGame() {
             clearInterval(timerInterval);
             const timeTaken = ((Date.now() - startTime) / 1000).toFixed(1);
-            alert(`Game Over! Your score: ${score}. You finished the game in ${timeTaken} seconds.`);
-            document.getElementById('restartButton').style.display = 'inline';
+            document.getElementById('resultText').textContent = `Game Over! Your score: ${score}. You finished the game in ${timeTaken} seconds.`;
+            document.getElementById('overlay').style.display = 'flex';
         }
 
         function resetGame() {
             score = 0;
             document.getElementById('score').textContent = score;
-            playerX = -blockSize; // Reset player position off-screen
-            playerY = -blockSize; // Reset player position off-screen
+            playerX = -blockSize; 
+            playerY = -blockSize; 
             clearInterval(timerInterval);
             document.getElementById('timer').textContent = "Time: 0.0s";
             drawGame();
@@ -103,34 +148,29 @@
 
         document.getElementById('startButton').addEventListener('click', () => {
             resetGame();
-            playerX = 0; // Move player into view
-            playerY = 0; // Move player into view
+            playerX = 0; 
+            playerY = 0; 
             setTargetPosition();
             startTime = Date.now();
             timerInterval = setInterval(() => {
                 const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
                 document.getElementById('timer').textContent = `Time: ${elapsed}s`;
             }, 100);
-            document.getElementById('restartButton').style.display = 'none';
             drawGame();
         });
 
-        document.getElementById('restartButton').addEventListener('click', () => {
+        document.getElementById('restartButtonOverlay').addEventListener('click', () => {
             resetGame();
-            playerX = 0; // Move player into view
-            playerY = 0; // Move player into view
-            setTargetPosition();
-            startTime = Date.now();
-            timerInterval = setInterval(() => {
-                const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-                document.getElementById('timer').textContent = `Time: ${elapsed}s`;
-            }, 100);
-            document.getElementById('restartButton').style.display = 'none';
-            drawGame();
+            document.getElementById('overlay').style.display = 'none'; // Hide the overlay
         });
+
+        document.getElementById('upButton').addEventListener('click', () => movePlayer(0, -blockSize));
+        document.getElementById('downButton').addEventListener('click', () => movePlayer(0, blockSize));
+        document.getElementById('leftButton').addEventListener('click', () => movePlayer(-blockSize, 0));
+        document.getElementById('rightButton').addEventListener('click', () => movePlayer(blockSize, 0));
 
         document.addEventListener('keydown', (event) => {
-            if (document.getElementById('restartButton').style.display === 'none') {
+            if (document.getElementById('overlay').style.display === 'none') {
                 switch (event.key) {
                     case 'w':
                         movePlayer(0, -blockSize);
@@ -146,11 +186,10 @@
                         break;
                 }
 
-                // Check for collision
                 if (isColliding()) {
                     score++;
                     document.getElementById('score').textContent = score;
-                    setTargetPosition(); // Respawn target immediately on collision
+                    setTargetPosition();
                     drawGame();
                     if (score >= 10) {
                         endGame();
@@ -159,7 +198,13 @@
             }
         });
 
-        // Initial setup
+        document.getElementById('shareButton').addEventListener('click', () => {
+            const url = window.location.href;
+            navigator.clipboard.writeText(url).then(() => {
+                alert('Link copied to clipboard!');
+            });
+        });
+
         resetGame();
     </script>
 </body>
