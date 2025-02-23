@@ -9,11 +9,12 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            height: 100vh; /* Full viewport height */
+            height: calc(100vh - 80px); /* Reduce height to avoid top cutoff */
             margin: 0;
             background-color: #f0f0f0;
             font-family: Arial, sans-serif;
             overflow: hidden; /* Prevent scrolling */
+            padding-top: 40px; /* Extra buffer at the top */
         }
         #scoreboard {
             margin-bottom: 10px;
@@ -77,12 +78,12 @@
     </div>
 
     <div id="controls">
-        <button class="directionButton" id="upButton">↑</button>
+        <button class="directionButton" id="upButton">⬆️</button>
         <div>
-            <button class="directionButton" id="leftButton">←</button>
-            <button class="directionButton" id="rightButton">→</button>
+            <button class="directionButton" id="leftButton">⬅️</button>
+            <button class="directionButton" id="rightButton">➡️</button>
         </div>
-        <button class="directionButton" id="downButton">↓</button>
+        <button class="directionButton" id="downButton">⬇️</button>
     </div>
 
     <script>
