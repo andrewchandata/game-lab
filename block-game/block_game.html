@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Block Game</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        #scoreboard {
+            margin-bottom: 10px;
+            font-size: 20px;
+            color: #333;
+        }
+        canvas {
+            border: 2px solid #333;
+        }
+        button {
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="scoreboard">
+        Score: <span id="score">0</span> 
+        <button id="startButton">Start</button>
+        <button id="restartButton" style="display: none;">Restart</button>
+        <span id="timer">Time: 0.0s</span>
+    </div>
+    <canvas id="gameCanvas" width="320" height="320"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const blockSize = 40;
+        let playerX = -blockSize; // Start off-screen
+        let playerY = -blockSize; // Start off-screen
+        let targetX = 0;
+        let targetY = 0;
+        let score = 0;
+        let startTime = null;
+        let timerInterval;
+
+        function drawPlayer() {
+            ctx.fillStyle = 'blue';
+            ctx.fillRect(playerX, playerY, blockSize, blockSize);
+        }
+
+        function drawTarget() {
+            ctx.fillStyle = 'red';
+            ctx.fillRect(targetX, targetY, blockSize, blockSize);
+        }
+
+        function setTargetPosition() {
+            targetX = Math.floor(Math.random() * (canvas.width / blockSize)) * blockSize;
+            targetY = Math.floor(Math.random() * (canvas.height / blockSize)) * blockSize;
+        }
+
+        function movePlayer(dx, dy) {
+            playerX += dx;
+            playerY += dy;
+
+            // Boundary check
+            playerX = Math.max(0, Math.min(canvas.width - blockSize, playerX));
+            playerY = Math.max(0, Math.min(canvas.height - blockSize, playerY));
+
+            drawGame(); // Redraw the game
+        }
+
+        function isColliding() {
+            return playerX === targetX && playerY === targetY;
+        }
+
+        function drawGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+            drawPlayer();
+            drawTarget(); // Only draw target if the game has started
+        }
+
+        function endGame() {
+            clearInterval(timerInterval);
+            const timeTaken = ((Date.now() - startTime) / 1000).toFixed(1);
+            alert(`Game Over! Your score: ${score}. You finished the game in ${timeTaken} seconds.`);
+            document.getElementById('restartButton').style.display = 'inline';
+        }
+
+        function resetGame() {
+            score = 0;
+            document.getElementById('score').textContent = score;
+            playerX = -blockSize; // Reset player position off-screen
+            playerY = -blockSize; // Reset player position off-screen
+            clearInterval(timerInterval);
+            document.getElementById('timer').textContent = "Time: 0.0s";
+            drawGame();
+        }
+
+        document.getElementById('startButton').addEventListener('click', () => {
+            resetGame();
+            playerX = 0; // Move player into view
+            playerY = 0; // Move player into view
+            setTargetPosition();
+            startTime = Date.now();
+            timerInterval = setInterval(() => {
+                const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+                document.getElementById('timer').textContent = `Time: ${elapsed}s`;
+            }, 100);
+            document.getElementById('restartButton').style.display = 'none';
+            drawGame();
+        });
+
+        document.getElementById('restartButton').addEventListener('click', () => {
+            resetGame();
+            playerX = 0; // Move player into view
+            playerY = 0; // Move player into view
+            setTargetPosition();
+            startTime = Date.now();
+            timerInterval = setInterval(() => {
+                const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+                document.getElementById('timer').textContent = `Time: ${elapsed}s`;
+            }, 100);
+            document.getElementById('restartButton').style.display = 'none';
+            drawGame();
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (document.getElementById('restartButton').style.display === 'none') {
+                switch (event.key) {
+                    case 'w':
+                        movePlayer(0, -blockSize);
+                        break;
+                    case 'a':
+                        movePlayer(-blockSize, 0);
+                        break;
+                    case 's':
+                        movePlayer(0, blockSize);
+                        break;
+                    case 'd':
+                        movePlayer(blockSize, 0);
+                        break;
+                }
+
+                // Check for collision
+                if (isColliding()) {
+                    score++;
+                    document.getElementById('score').textContent = score;
+                    setTargetPosition(); // Respawn target immediately on collision
+                    drawGame();
+                    if (score >= 10) {
+                        endGame();
+                    }
+                }
+            }
+        });
+
+        // Initial setup
+        resetGame();
+    </script>
+</body>
+</html>
