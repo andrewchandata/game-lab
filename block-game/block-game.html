@@ -121,6 +121,11 @@
                 score++;
                 document.getElementById('score').textContent = score;
                 setTargetPosition();
+
+                // Check if the score reached 10
+                if (score >= 10) {
+                    endGame(); // Call endGame if score is 10 or more
+                }
             }
 
             drawGame();
