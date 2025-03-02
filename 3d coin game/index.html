@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Coin Collector</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/examples/js/controls/PointerLockControls.js"></script>
+
+    <script>
+        let scene, camera, renderer, controls;
+        let player, coins = [], coinsCollected = 0;
+
+        function init() {
+            // Set up the scene
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            // Create a room
+            const geometry = new THREE.BoxGeometry(10, 10, 10);
+            const material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+            const room = new THREE.Mesh(geometry, material);
+            room.position.set(0, 5, 0);
+            scene.add(room);
+
+            // Initialize PointerLockControls
+            controls = new THREE.PointerLockControls(camera, document.body);
+            scene.add(controls.getObject());
+
+            document.addEventListener('click', () => {
+                controls.lock();
+            });
+
+            // Create coins
+            for (let i = 0; i < 3; i++) {
+                spawnCoin();
+            }
+
+            window.addEventListener('resize', onWindowResize, false);
+            document.addEventListener('keydown', onKeyDown, false);
+
+            animate();
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function onKeyDown(event) {
+            const speed = 0.1;
+            switch (event.key) {
+                case 'w': controls.getObject().position.z -= speed; break;
+                case 's': controls.getObject().position.z += speed; break;
+                case 'a': controls.getObject().position.x -= speed; break;
+                case 'd': controls.getObject().position.x += speed; break;
+            }
+            checkCoinCollection();
+        }
+
+        function checkCoinCollection() {
+            coins.forEach((coin, index) => {
+                if (controls.getObject().position.distanceTo(coin.position) < 1) {
+                    scene.remove(coin);
+                    coins.splice(index, 1); // Remove coin from array
+                    coinsCollected++;
+                    if (coinsCollected < 3) {
+                        spawnCoin();
+                    } else {
+                        alert("Game Over! You've collected 3 coins.");
+                    }
+                }
+            });
+        }
+
+        function spawnCoin() {
+            const coin = new THREE.Mesh(new THREE.CircleGeometry(0.2, 32), new THREE.MeshBasicMaterial({ color: 0xffff00 }));
+            coin.position.set(Math.random() * 8 - 4, 0.1, Math.random() * 8 - 4);
+            scene.add(coin);
+            coins.push(coin);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        init();
+    </script>
+</body>
+</html>
